@@ -1,0 +1,38 @@
+{
+  "trial": 104,
+  "bucketer": "kmeans",
+  "encoder": "last",
+  "model_type": "mlp",
+  "params": {
+    "lstm_units": 128,
+    "conv_filters": 64,
+    "kernel_size": 5,
+    "dropout": 0.2306666777883113,
+    "lr": 0.0030454438420720125,
+    "batch_size": 32,
+    "epochs": 27,
+    "class_weight_pos": 4.829141750999148,
+    "threshold": 0.5175000324324573
+  },
+  "val_metrics": {
+    "accuracy": 0.8633879781420765,
+    "precision": 0.7448979591836735,
+    "recall": 1.0,
+    "f1": 0.8538011695906432,
+    "auc": 0.8863636363636364,
+    "pr_auc": 0.7448979591836735,
+    "mcc": 0.7586850258573128,
+    "best_threshold": 1.0,
+    "best_f1_on_val": 0.853801169590154
+  },
+  "test_metrics": {
+    "accuracy": 0.8245614035087719,
+    "precision": 0.696969696969697,
+    "recall": 1.0,
+    "f1": 0.8214285714285714,
+    "auc": 0.8529411764705882,
+    "pr_auc": 0.696969696969697,
+    "mcc": 0.7014118687516404
+  },
+  "score": 0.7343073593073592
+}

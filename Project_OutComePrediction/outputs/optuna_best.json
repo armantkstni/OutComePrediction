@@ -1,0 +1,17 @@
+{
+  "best_params": {
+    "bucketer": "state",
+    "encoder": "index",
+    "model_type": "bilstm",
+    "lstm_units": 256,
+    "conv_filters": 64,
+    "kernel_size": 3,
+    "dropout": 0.2255021544807011,
+    "lr": 0.0002739210938527681,
+    "batch_size": 64,
+    "epochs": 26,
+    "class_weight_pos": 6.747688882360095,
+    "threshold": 0.4263880864888173
+  },
+  "best_value": 0.8420386645334493
+}

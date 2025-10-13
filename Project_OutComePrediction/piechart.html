@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>70-30 Pie Chart</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .pie {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #4caf50 0% 70%,   /* Green for 70% */
+        #f44336 70% 100%  /* Red for 30% */
+      );
+      position: relative;
+    }
+
+    .pie span {
+      position: absolute;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #000;
+    }
+
+    .pie .green-label {
+      top: 55%;
+      left: 65%;
+      transform: translate(-50%, -50%);
+    }
+
+    .pie .red-label {
+      top: 25%;
+      left: 25%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="pie">
+    <span class="green-label">70%</span>
+    <span class="red-label">30%</span>
+  </div>
+</body>
+</html>

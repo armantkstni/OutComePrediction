@@ -1,0 +1,38 @@
+{
+  "trial": 28,
+  "bucketer": "state",
+  "encoder": "static",
+  "model_type": "mlp",
+  "params": {
+    "lstm_units": 128,
+    "conv_filters": 64,
+    "kernel_size": 2,
+    "dropout": 0.27114488455142094,
+    "lr": 0.006468984796766259,
+    "batch_size": 32,
+    "epochs": 23,
+    "class_weight_pos": 9.961504155424965,
+    "threshold": 0.5546542877105857
+  },
+  "val_metrics": {
+    "accuracy": 0.3989071038251366,
+    "precision": 0.3989071038251366,
+    "recall": 1.0,
+    "f1": 0.5703125,
+    "auc": 0.5,
+    "pr_auc": 0.3989071038251366,
+    "mcc": 0.0,
+    "best_threshold": 1.0,
+    "best_f1_on_val": 0.5703124999995923
+  },
+  "test_metrics": {
+    "accuracy": 0.40350877192982454,
+    "precision": 0.40350877192982454,
+    "recall": 1.0,
+    "f1": 0.575,
+    "auc": 0.5,
+    "pr_auc": 0.40350877192982454,
+    "mcc": 0.0
+  },
+  "score": 0.45495614035087717
+}
