@@ -1,2 +1,0 @@
-# OutComePrediction
-Final Project
