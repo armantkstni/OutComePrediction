@@ -55,7 +55,7 @@ np.random.seed(42)
 tf.random.set_seed(42)
 
 # -------------------- CONFIG --------------------
-DATA_PATH = "labeled_logs_csv_processed/BPIC17_O_Accepted.csv"  # مسیر پیش‌فرض؛ در صورت لزوم ویرایش کن
+DATA_PATH = "labeled_logs_csv_processed/BPIC17_O_Accepted.csv"  
 OUTPUT_DIR = "outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -63,11 +63,10 @@ CASE_ID_COL = "case_id"
 EVENT_COL = "event_nr"
 LABEL_COL = "label"
 
-# ستون‌های کاتگوریک و عددی داینامیک (مثال — با داده‌ی شما باید تنظیم شود)
 DYNAMIC_CAT_COLS = ["activity"]
-DYNAMIC_NUM_COLS = ["crp", "lacticacid", "leucocytes"]  # اگر در دیتاست نیستند، کد آنها را کامل می‌کند
+DYNAMIC_NUM_COLS = ["crp", "lacticacid", "leucocytes"]  
 
-MAX_EVENTS = 20    # طول ماکسیمم پیشوند (sequence length)
+MAX_EVENTS = 20   
 SEED = 42
 
 # -------------------- Utility --------------------
@@ -80,7 +79,6 @@ def safe_read_csv(path):
 
 def add_time_features(df, timestamp_col=None):
     df = df.copy()
-    # اگر time stamp داری میتونی timestamp_col را بدهی؛ در غیر این صورت از evnr استفاده کن
     if timestamp_col and timestamp_col in df.columns:
         df[timestamp_col] = pd.to_datetime(df[timestamp_col])
         df = df.sort_values([CASE_ID_COL, timestamp_col])
@@ -99,15 +97,15 @@ def add_time_features(df, timestamp_col=None):
 class NoBucketer:
     def fit(self, X): return self
     def predict(self, X):
-        # همه را یک bucket میدهد
+
         return np.zeros(len(X), dtype=int)
 
 class PrefixLengthBucketer:
     def fit(self, X):
-        # ثبت نکردن چیز خاصی نیاز نیست
+
         return self
     def predict(self, X):
-        # bucket = طول پیشوند (evnr)
+
         if EVENT_COL in X.columns:
             return X[EVENT_COL].fillna(1).astype(int).to_numpy()
         else:
@@ -121,7 +119,7 @@ class KMeansBucketer:
         self.encoder_feats = None
 
     def fit(self, X):
-        # برای خوشه‌بندی از خلاصه‌برداری عددی استفاده می‌کنیم (agg)
+
         df_num = X.select_dtypes(include=[np.number]).fillna(0)
         self.encoder_feats = df_num.columns.tolist()
         if len(df_num) < self.n_clusters:
@@ -140,7 +138,7 @@ class KNNBucketer:
         self.n_neighbors = n_neighbors
         self.pipeline = None
     def fit(self, X):
-        # استفاده از آخرین وضعیت برای encoding ساده
+
         df_enc = X.groupby(CASE_ID_COL).last().select_dtypes(include=[np.number]).fillna(0)
         self.X_enc = df_enc.values
         # labels as indices (dummy)
@@ -156,7 +154,7 @@ class KNNBucketer:
 # -------------------- Encoders --------------------
 class AggregationEncoder:
     def fit_transform(self, df):
-        # فقط ستون‌های عددی رو نگه دار
+
         df_num = df.select_dtypes(include=[np.number])
         agg = df_num.groupby(df[CASE_ID_COL]).agg(['mean', 'std', 'min', 'max']).fillna(0)
         # flatten MultiIndex
@@ -174,7 +172,6 @@ class LastStateEncoder:
         return X.values, labels
 
 class StaticEncoder:
-    # فرض بر این است که ستون‌های استاتیک قبل از هر ردیف event تکرار شده‌اند (مثل case attributes)
     def fit_transform(self, df):
         static = df.groupby(CASE_ID_COL).first().reset_index(drop=True)
         labels = static[LABEL_COL].values
@@ -182,7 +179,6 @@ class StaticEncoder:
         return X.values, labels
 
 class IndexEncoder:
-    # index encoding -> produce sequences (n_prefixes x MAX_EVENTS x feat_dim) and labels
     def __init__(self, cat_cols=None, num_cols=None, max_events=MAX_EVENTS):
         self.cat_cols = cat_cols or []
         self.num_cols = num_cols or []
@@ -190,7 +186,6 @@ class IndexEncoder:
         self.cat_encoders = {}
 
     def fit(self, df):
-        # fit label encoders for categorical dynamic cols
         for c in self.cat_cols:
             le = LabelEncoder()
             df[c] = df[c].fillna("NA").astype(str)
@@ -368,7 +363,7 @@ def prepare_features_for_combo(df, bucketer_name, encoder_name, index_encoder_ob
         last_state = df.groupby(CASE_ID_COL).tail(1)[[CASE_ID_COL] + DYNAMIC_CAT_COLS]
         state_col = DYNAMIC_CAT_COLS[0] if DYNAMIC_CAT_COLS else CASE_ID_COL
         map_state = dict(zip(last_state[CASE_ID_COL], last_state[state_col].astype(str)))
-        # مقادیر متنی رو با LabelEncoder به اعداد تبدیل کن
+
         states = df[CASE_ID_COL].map(map_state).fillna("NA").astype(str)
         le = LabelEncoder()
         buckets = le.fit_transform(states)
@@ -638,7 +633,7 @@ def run_search(n_trials=30):
                     # simple fixed params
                     params = {"lstm_units":128, "dropout":0.3, "lr":1e-3, "batch_size":64, "epochs":10, "class_weight_pos":3.0}
                     try:
-                        # به جای شبیه‌سازی کامل Optuna، مستقیم objective رو صدا می‌زنیم
+
                         trial = SimpleNamespace(
                             number=0,
                             suggest_categorical=lambda name, choices: choices[0],

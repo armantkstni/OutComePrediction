@@ -45,22 +45,21 @@ SEED = 42
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-DATA_PATH = "labeled_logs_csv_processed/sepsis_cases_1.csv"  # <-- مسیر را ویرایش کنید
+DATA_PATH = "labeled_logs_csv_processed/sepsis_cases_1.csv"  
 OUTPUT_DIR = "outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-CASE_ID_COL = "case_id"   # فرض بر این است نام ستون‌ها به حروف کوچک و با _
+CASE_ID_COL = "case_id"   
 EVENT_COL = "event_nr"
 LABEL_COL = "label"
 
-# تنظیمات مدل/آموزش
-MAX_EVENTS = 20   # طول ماکسیمم پیشوند برای padding
+MAX_EVENTS = 20  
 BATCH_SIZE = 64
 EPOCHS = 30
 
-# کدام ستون‌های داینامیکِ کاتگوریک/عددی داریم؟ (در صورت نیاز خودتان ویرایش کنید)
+
 DYNAMIC_CAT_COLS = ["activity"]
-DYNAMIC_NUM_COLS = ["crp", "lacticacid", "leucocytes"]  # مثال؛ با داده شما باید هماهنگ شود
+DYNAMIC_NUM_COLS = ["crp", "lacticacid", "leucocytes"]  
 
 # -------------------- Utility functions --------------------
 def safe_read_csv(path):
@@ -72,14 +71,7 @@ def safe_read_csv(path):
     return df
 
 def add_time_features(df, timestamp_col=None):
-    """
-    اضافه کردن ویژگی‌های زمانی مصنوعی مشابه مقاله:
-      - elapsed: زمان از شروع کیس
-      - evtime: زمان از رویداد قبلی
-      - evnr: شماره رویداد در کیس (اگر موجود نیست)
-      - since_midnight, hour, day, month (در صورت داشتن timestamp)
-    اگر timestamp_col داده نشود، فقط evnr اضافه خواهد شد.
-    """
+
     df = df.copy()
     if timestamp_col and timestamp_col in df.columns:
         df[timestamp_col] = pd.to_datetime(df[timestamp_col])
@@ -91,7 +83,6 @@ def add_time_features(df, timestamp_col=None):
         df['day'] = df[timestamp_col].dt.day.astype(int)
         df['month'] = df[timestamp_col].dt.month.astype(int)
     else:
-        # بدون timestamp فقط ترتیب وقایع را در event_nr می‌پذیریم
         if EVENT_COL not in df.columns:
             df[EVENT_COL] = df.groupby(CASE_ID_COL).cumcount() + 1
         df['elapsed'] = df.groupby(CASE_ID_COL).cumcount()
@@ -112,11 +103,9 @@ def make_index_sequences(df, maxlen=MAX_EVENTS, cat_cols=None, num_cols=None):
     case_ids = []
     grouped = df.groupby(CASE_ID_COL)
     for case_id, group in grouped:
-        # برای هر prefix از 1 تا len(group) (می‌توان با محدود کردن prefix length کار را سریع‌تر کرد)
         n_events = len(group)
         for prefix_len in range(1, min(n_events, maxlen)+1):
             prefix = group.iloc[:prefix_len]
-            # build per-event features: cat cols (as ints), num cols (floats), synthetic time features
             row_feats = []
             for _, row in prefix.iterrows():
                 feat = []
@@ -254,7 +243,7 @@ def evaluate_metrics(y_true, y_prob, threshold=0.5):
 def main_pipeline(data_path=DATA_PATH):
     df = safe_read_csv(data_path)
     # make sure column names normalized
-    df = add_time_features(df, timestamp_col=None)  # اگر timestamp دارید نام ستون آن را بدهید
+    df = add_time_features(df, timestamp_col=None)  
     # encode label
     if LABEL_COL not in df.columns:
         raise ValueError(f"{LABEL_COL} column not found in data")
@@ -315,8 +304,8 @@ def main_pipeline(data_path=DATA_PATH):
 
     # ---------------- Model training with drift detection & possible retrain ----------------
     # choose model type: 'cnn_lstm' or 'bilstm'
-    model_type = "cnn_lstm"  # می‌توانید این را تغییر دهید یا پارامترایزی کنید
-    bidir = False  # برای cnn_lstm اگر True می‌شود Bi-LSTM پس از conv
+    model_type = "cnn_lstm"  
+    bidir = False 
 
     if model_type == "cnn_lstm":
         model = build_cnn_lstm_model(input_shape=(MAX_EVENTS, feat_dim), conv_filters=64, kernel_size=3, lstm_units=128, dropout_rate=0.4, bidirectional=bidir)
@@ -432,21 +421,13 @@ import numpy as np
 from sklearn.metrics import average_precision_score, f1_score
 import optuna
 
-# فرض می‌کنیم ماژول‌های Bucketer و Encoder قبلاً پیاده‌سازی شده‌اند
-# مثل: NoBucketer, PrefixLengthBucketer, KMeansBucketer, StateBucketer
-#      StaticEncoder, LastStateEncoder, AggregationEncoder, IndexEncoder
+
 
 BUCKETERS = ["NoBucketer", "PrefixLengthBucketer", "KMeansBucketer", "StateBucketer"]
 ENCODERS = ["Static", "LastState", "Aggregation", "Index"]
 
 def run_pipeline(bucket_method, encoder_method, params):
-    """
-    یک بار کل pipeline اجرا می‌شود:
-    - bucketing روی داده
-    - encoding روی داده
-    - آموزش مدل با پارامترهای مشخص
-    """
-    # این بخش pseudo-code هست، باید با کدهای خودت جایگزین بشه
+
     bucketer = get_bucketer(bucket_method)
     encoder = get_encoder(encoder_method)
     X_train, y_train, X_val, y_val = prepare_data(bucketer, encoder)
@@ -468,7 +449,7 @@ def objective(trial):
     bucket_method = trial.suggest_categorical("bucket", BUCKETERS)
     encoder_method = trial.suggest_categorical("encoder", ENCODERS)
 
-    # هایپرپارامترهای مدل
+
     params = {
         "lstm_units": trial.suggest_categorical("lstm_units", [64, 128, 256]),
         "dropout": trial.suggest_float("dropout", 0.2, 0.6),
@@ -481,7 +462,6 @@ def objective(trial):
     score = run_pipeline(bucket_method, encoder_method, params)
     return score
 
-# اجرای جستجو
 study = optuna.create_study(direction="maximize")
 study.optimize(objective, n_trials=50)
 

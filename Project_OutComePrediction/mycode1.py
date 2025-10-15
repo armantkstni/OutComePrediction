@@ -12,33 +12,29 @@ from tensorflow.keras.layers import LSTM, Dense, Masking
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# مسیر فایل لاگ
 log_path = r"C:\Users\Arman Takestani\Downloads\Compressed\predictive-monitoring-benchmark-master\predictive-monitoring-benchmark-master\labeled_logs_csv_processed\sepsis_cases_1.csv"
 data = pd.read_csv(log_path, sep=';')
 
-# تنظیمات
 prefix_length = 10
 bucket_methods = ["single", "prefix", "state", "cluster", "knn"]
 encodings = ["index", "agg", "laststate"]
 
-# تمیز کردن نام ستون‌ها
 data.columns = data.columns.str.strip().str.lower()
 
-# تبدیل label به عدد
 label_encoder = LabelEncoder()
 data['label'] = label_encoder.fit_transform(data['label'])
 
-# مرتب‌سازی
+
 data = data.sort_values(['case id', 'event_nr'])
 
-# آماده‌سازی Activity Encoder برای index encoding
+
 activity_encoder = LabelEncoder()
 activity_encoder.fit(data['activity'])
 
-# لیست نتایج
+
 results = []
 
-# تابع ساخت sequence برای index encoding
+
 def create_index_sequences(group, prefix_length):
     sequences, labels = [], []
     events = group['activity'].tolist()
@@ -50,7 +46,6 @@ def create_index_sequences(group, prefix_length):
         labels.append(label)
     return sequences, labels
 
-# اجرای روی همه ترکیب‌ها
 for bucket in bucket_methods:
     for encoding in encodings:
         print(f"🔄 Running: bucket = {bucket}, encoding = {encoding}")
@@ -64,7 +59,6 @@ for bucket in bucket_methods:
             elif encoding in ["agg", "laststate"]:
                 row = group.iloc[-1]
 
-                # فقط مقادیر عددی واقعی استخراج شود
                 numeric_features = []
                 for col, val in row.items():
                     if col == 'label':
@@ -77,7 +71,6 @@ for bucket in bucket_methods:
                 X.append(numeric_features)
                 y.append(row['label'])
 
-        # پیش‌پردازش داده‌ها
         if encoding == "index":
             X = pad_sequences(X, maxlen=prefix_length, padding='pre')
         else:
@@ -85,11 +78,9 @@ for bucket in bucket_methods:
 
         y = np.array(y)
 
-        # تقسیم train/test
         from sklearn.model_selection import train_test_split
         X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
 
-        # ساخت مدل
         if encoding == "index":
             X_train = to_categorical(X_train, num_classes=len(activity_encoder.classes_))
             X_test = to_categorical(X_test, num_classes=len(activity_encoder.classes_))
@@ -108,11 +99,8 @@ for bucket in bucket_methods:
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         model.fit(X_train, y_train, epochs=5, batch_size=32, verbose=0)
 
-        # پیش‌بینی
         y_pred_prob = model.predict(X_test).flatten()
         y_pred = (y_pred_prob >= 0.5).astype(int)
-
-        # متریک‌ها
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred, zero_division=0)
         rec = recall_score(y_test, y_pred, zero_division=0)
@@ -129,11 +117,10 @@ for bucket in bucket_methods:
             'auc': auc
         })
 
-# نمایش جدول نتایج
+
 results_df = pd.DataFrame(results)
 print(results_df)
 
-# 📊 نمودار F1 Score
 plt.figure(figsize=(12, 6))
 sns.barplot(data=results_df, x="bucket", y="f1_score", hue="encoding")
 plt.title("F1 Score Comparison (LSTM on Sepsis Cases)")

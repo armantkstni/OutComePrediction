@@ -83,7 +83,7 @@ for buck in bucketing_methods:
         df_bucketed = bucketing_funcs[buck](df_copy)
         df_encoded = encoding_funcs[enc](df_bucketed)
 
-        # حذف ستون غیرعددی برای مدل
+
         X = df_encoded.select_dtypes(include=[np.number])
         y = df_encoded[LABEL_COL].astype(int).values
         
@@ -101,14 +101,14 @@ for buck in bucketing_methods:
         model.fit(X_train, y_train, epochs=5, batch_size=32, verbose=0,
                   callbacks=[EarlyStopping(patience=2, restore_best_weights=True)])
         
-        # ذخیره اندازه بکت‌ها
+
         bucket_sizes = df_bucketed.groupby("bucket_id")[CASE_ID_COL].nunique()
         bucket_results.append(pd.DataFrame({
             "log_bucket_size": np.log10(bucket_sizes),
             "combination": f"{buck}+{enc}"
         }))
 
-# ==================== رسم نمودار Bucket Size Distributions ==================== #
+# ===================Bucket Size Distributions ==================== #
 bucket_df = pd.concat(bucket_results)
 plt.figure(figsize=(10, 6))
 sns.kdeplot(data=bucket_df, x="log_bucket_size", hue="combination", fill=True, alpha=0.3)

@@ -136,8 +136,8 @@ for enc in encoding_methods:
             results.append(metrics)
 
         except Exception as e:
-            print(f"❌ Failed for {enc}+{buck}: {e}")
+            print(f" Failed for {enc}+{buck}: {e}")
 
 # ------------------ VISUALIZATION ------------------ #
 plot_results(results)
-print("✅ Done. Results plotted.")
+print(" Done. Results plotted.")

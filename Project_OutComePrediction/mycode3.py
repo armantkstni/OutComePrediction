@@ -137,7 +137,7 @@ if __name__ == "__main__":
                 results.append(metrics)
 
             except Exception as e:
-                print(f"❌ Failed for {encoding}+{bucketing}: {e}")
+                print(f" Failed for {encoding}+{bucketing}: {e}")
                 continue
 
     df_results = pd.DataFrame(results)
